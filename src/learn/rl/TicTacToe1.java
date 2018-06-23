@@ -11,27 +11,32 @@ public class TicTacToe1 {
 	float alpha = 0.05f;
 
 	public static void main(String[] args) {
-		TicTacToe1 t = new TicTacToe1();
-		System.out.println("training...");
-		for (int i = 0; i < 50000; i++) {
-			t.clearBoard();
-			int pos = -1;
-			do {
-				pos = t.stepNext();
-				// t.printBoard();
-				// System.out.println();
-				int index = t.getBoardIndex();
-				int winer = t.calWiner();
-				if (winer > 0) {
-					t.scoreTable[index] = (winer == 2) ? 1.0f : -1.0f;
-					break;
-				}
-				t.updateScoreMap(index);
-			} while (pos >= 0);
-		}
 		// t.printScoreMap();
+		TicTacToe1 t = new TicTacToe1();
+		t.train();
 		System.out.println("Play: (input 1 to 9)");
 		t.play();
+	}
+	
+	public void train() {
+		System.out.println("training AI player 2...");
+		for (int i = 0; i < 50000; i++) {
+			clearBoard();
+			int pos = -1;
+			do {
+				pos = stepNext();
+				// t.printBoard();
+				// System.out.println();
+				int index = getBoardIndex();
+				int winer = calWiner();
+				if (winer > 0) {
+					scoreTable[index] = (winer == 2) ? 1.0f : -1.0f;
+					break;
+				} else {
+					updateScoreMap(index);
+				}
+			} while (pos >= 0);
+		}
 	}
 
 	public void printScoreMap() {
@@ -41,6 +46,42 @@ public class TicTacToe1 {
 		}
 	}
 
+	public void playInit() {
+		clearBoard();
+	}
+	
+	public void humanGo(int pos) {
+		board[pos] = getTurn();
+		this.printBoard();
+		togTurn();
+	}
+	
+	public int aiGo() {
+		// AI player
+		int maxIdx = -1;
+		float maxScore = -1.0f;
+		for (int i = 0; i < 9; i++) {
+			if (board[i] == 0) {
+				board[i] = getTurn();
+				int index = this.getBoardIndex();
+				System.out.println("i=" + (i + 1) + ", score=" + scoreTable[index]);
+				if (scoreTable[index] > maxScore) {
+					maxScore = scoreTable[index];
+					maxIdx = i;
+				}
+				board[i] = 0;
+			}
+		}
+		if (maxIdx == -1)
+			maxIdx = getNextFreePosition();
+		if (maxIdx != -1) {
+			board[maxIdx] = getTurn();
+			this.printBoard();
+			togTurn();
+		}
+		return maxIdx;
+	}
+	
 	public void play() {
 		clearBoard();
 		printBoard();
@@ -145,7 +186,10 @@ public class TicTacToe1 {
 				board[j] = 0;
 			}
 		}
-		scoreTable[index] += alpha * (minScore - scoreTable[index]);
+		//if(minScore == -1)
+		//	scoreTable[index] = -1;
+		//else
+			scoreTable[index] += alpha * (minScore - scoreTable[index]);
 	}
 
 	public int getBoardIndex() {
